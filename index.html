@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Sistem Cinta</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+background:#05010a;
+font-family:monospace;
+overflow-x:hidden;
+color:white;
+}
+
+/* MATRIX */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+/* GLASS CARD */
+
+.card{
+background:rgba(0,0,0,0.65);
+backdrop-filter:blur(12px);
+border:1px solid #ff4dc4;
+border-radius:15px;
+padding:30px;
+box-shadow:0 0 25px rgba(255,77,196,0.4);
+}
+
+/* GRID GAME */
+
+.gridBox{
+height:60px;
+background:#111;
+border:1px solid #ff4dc4;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+}
+
+.gridBox:hover{
+background:#1c1c1c;
+}
+
+/* PHOTO GRID */
+
+.photoGrid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+gap:12px;
+}
+
+/* FOTO */
+
+.photo{
+width:100%;
+height:120px;
+object-fit:cover;
+border-radius:12px;
+border:2px solid #ff4dc4;
+box-shadow:0 0 15px rgba(255,77,196,.4);
+
+opacity:0;
+transform:scale(.7) rotate(-3deg);
+transition:all .6s;
+}
+
+/* muncul animasi */
+
+.photo.show{
+opacity:1;
+transform:scale(1) rotate(0deg);
+}
+
+/* hover */
+
+.photo:hover{
+transform:scale(1.2) rotate(0deg);
+z-index:5;
+}
+
+/* floating memory */
+
+@keyframes floatPhoto{
+
+0%{transform:translateY(0px)}
+50%{transform:translateY(-8px)}
+100%{transform:translateY(0px)}
+
+}
+
+.photo.float{
+animation:floatPhoto 4s ease-in-out infinite;
+}
+
+/* HEART */
+
+.heart{
+position:fixed;
+font-size:22px;
+animation:float 6s linear infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(0)}
+100%{transform:translateY(-100vh)}
+}
+
+/* CONFETTI */
+
+.confetti{
+position:fixed;
+width:10px;
+height:10px;
+background:pink;
+animation:fall 4s linear infinite;
+}
+
+@keyframes fall{
+0%{transform:translateY(-10vh)}
+100%{transform:translateY(100vh)}
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<!-- BOOT -->
+
+<div id="boot" class="h-screen flex flex-col justify-center items-center text-center space-y-4">
+
+<div id="bootText" class="text-pink-400 text-lg"></div>
+
+<button onclick="enterSystem()" id="enterBtn"
+class="px-6 py-3 bg-pink-500 rounded-lg hidden">
+Masuk ke Sistem Kenangan
+</button>
+
+</div>
+
+<!-- MAIN -->
+
+<div id="main" class="hidden p-6 space-y-24">
+
+<button onclick="toggleMusic()"
+class="fixed bottom-6 right-6 bg-pink-500 px-4 py-2 rounded-lg">
+Musik
+</button>
+
+<audio id="music" loop>
+<source src="videoplayback.mp3">
+</audio>
+
+<section class="max-w-3xl mx-auto card">
+
+<h2 class="text-2xl text-pink-400 mb-4">Terminal Cinta</h2>
+
+<div id="terminal" class="text-green-400"></div>
+
+<button onclick="startPuzzle()" class="mt-4 bg-pink-500 px-4 py-2 rounded">
+Buka Kenangan
+</button>
+
+</section>
+
+<section id="puzzle" class="hidden card text-center max-w-xl mx-auto space-y-6">
+
+<h2 class="text-2xl text-pink-400">Pertanyaan Rahasia</h2>
+
+<p>when is our anniversary date?</p>
+
+<input id="answer" class="text-black px-3 py-2 rounded">
+
+<button onclick="checkAnswer()" class="bg-pink-500 px-4 py-2 rounded">
+Buka
+</button>
+
+<p id="puzzleMsg"></p>
+
+</section>
+
+<section id="heartGame" class="hidden card max-w-xl mx-auto text-center">
+
+<h2 class="text-2xl text-pink-400 mb-6">
+Pencarian Kenangan
+</h2>
+
+<p class="mb-6">Temukan hati tersembunyi</p>
+
+<div id="grid" class="grid grid-cols-5 gap-3"></div>
+
+<p id="gameMsg" class="mt-6"></p>
+
+</section>
+
+<!-- GALERI FOTO -->
+
+<section id="gallery" class="hidden max-w-4xl mx-auto card text-center">
+
+<h2 class="text-3xl text-pink-400 mb-6">
+Galeri Kenangan
+</h2>
+
+<div id="photoGrid" class="photoGrid"></div>
+
+</section>
+
+<section id="videoSection" class="hidden max-w-3xl mx-auto card text-center">
+
+<h2 class="text-3xl text-pink-400 mb-6">
+Video Kenangan
+</h2>
+
+<video id="loveVideo" controls class="mx-auto rounded-lg">
+
+<source src="vidio1.mp4" type="video/mp4">
+
+</video>
+
+</section>
+
+<section id="letter" class="hidden max-w-3xl mx-auto card text-center">
+
+<h2 class="text-3xl text-pink-400 mb-6">
+Surat Untukmu
+</h2>
+
+<p class="text-gray-200 leading-relaxed">
+
+Selamat ulang tahun, cintaku.
+
+Setiap momen bersamamu terasa seperti cerita indah yang tidak pernah ingin aku akhiri.
+
+Kamu adalah kenangan favoritku,
+tempat ternyamanku,
+dan hal terbaik yang pernah terjadi dalam hidupku.
+
+Terima kasih sudah hadir dalam hidupku.
+
+Aku akan selalu memilih kamu,
+hari ini,
+besok,
+dan selamanya.
+
+</p>
+
+</section>
+
+<section id="final" class="hidden text-center card max-w-xl mx-auto">
+
+<button onclick="finalSurprise()"
+class="bg-pink-500 px-6 py-3 rounded-lg text-xl">
+
+Kejutan Terakhir
+
+</button>
+
+<div id="finalText" class="hidden mt-8 space-y-4">
+
+<h1 class="text-5xl text-pink-300 animate-pulse">
+Selamat Ulang Tahun ❤️
+</h1>
+
+</div>
+
+</section>
+
+</div>
+
+<script>
+
+/* BOOT */
+
+let bootLines=[
+"Menyalakan sistem...",
+"Memindai kenangan...",
+"Memuat database cinta...",
+"Akses diberikan kepada: Cintaku"
+]
+
+let i=0
+
+function bootAnimation(){
+
+if(i<bootLines.length){
+
+bootText.innerHTML+=bootLines[i]+"<br>"
+i++
+
+setTimeout(bootAnimation,1000)
+
+}else{
+
+enterBtn.classList.remove("hidden")
+
+}
+
+}
+
+bootAnimation()
+
+function enterSystem(){
+
+boot.style.display="none"
+main.classList.remove("hidden")
+terminal()
+
+}
+
+/* TERMINAL */
+
+function terminal(){
+
+let lines=[
+"> Mengakses timeline hubungan...",
+"> Mencari kenangan...",
+"> File kenangan ditemukan...",
+"> Memuat database perasaan..."
+]
+
+let i=0
+
+let interval=setInterval(()=>{
+
+if(i<lines.length){
+
+terminal.innerHTML+=lines[i]+"<br>"
+i++
+
+}else clearInterval(interval)
+
+},900)
+
+}
+
+/* PUZZLE */
+
+function startPuzzle(){
+puzzle.classList.remove("hidden")
+}
+
+function checkAnswer(){
+
+let ans=document.getElementById("answer").value
+
+if(ans==="19092023"){
+
+puzzleMsg.innerHTML="Akses diterima 💗"
+
+heartGame.classList.remove("hidden")
+
+createGame()
+
+}else{
+
+puzzleMsg.innerHTML="Jawaban salah"
+
+}
+
+}
+
+/* GAME */
+
+let heartIndex=Math.floor(Math.random()*25)
+
+function createGame(){
+
+for(let i=0;i<25;i++){
+
+let box=document.createElement("div")
+
+box.className="gridBox"
+
+box.onclick=function(){
+
+if(i===heartIndex){
+
+box.innerHTML="💗"
+
+gameMsg.innerHTML="Kenangan berhasil dibuka 💗"
+
+unlockContent()
+
+}else{
+
+box.innerHTML="❌"
+
+}
+
+}
+
+grid.appendChild(box)
+
+}
+
+}
+
+function unlockContent(){
+
+gallery.classList.remove("hidden")
+videoSection.classList.remove("hidden")
+letter.classList.remove("hidden")
+final.classList.remove("hidden")
+
+loadPhotos()
+
+}
+
+/* FOTO */
+
+let photos=[
+"WhatsApp Image 2026-03-14 at 21.57.32.jpeg",
+"WhatsApp Image 2026-03-14 at 21.57.33 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.57.33.jpeg",
+"WhatsApp Image 2026-03-14 at 21.57.34.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.14 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.14.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.15 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.15 (2).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.15.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.16 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.16 (2).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.16.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.44.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.45 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.45.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.46 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.46.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.49 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.49.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.50 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.50 (2).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.50.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.51.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.52 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.52.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.53 (1).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.53 (2).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.43.jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.52 (2).jpeg",
+"WhatsApp Image 2026-03-14 at 21.58.53.jpeg"
+]
+
+function loadPhotos(){
+
+let grid=document.getElementById("photoGrid")
+
+photos.forEach((src,index)=>{
+
+let img=document.createElement("img")
+
+img.src=src
+img.className="photo"
+
+grid.appendChild(img)
+
+setTimeout(()=>{
+
+img.classList.add("show","float")
+
+},150*index)
+
+})
+
+}
+
+/* MUSIC */
+
+let music=document.getElementById("music")
+
+function toggleMusic(){
+
+if(music.paused) music.play()
+else music.pause()
+
+}
+
+/* MATRIX */
+
+let canvas=document.getElementById("matrix")
+let ctx=canvas.getContext("2d")
+
+canvas.height=window.innerHeight
+canvas.width=window.innerWidth
+
+let letters="LOVE123456❤".split("")
+let fontSize=14
+let columns=canvas.width/fontSize
+
+let drops=[]
+
+for(let x=0;x<columns;x++) drops[x]=1
+
+function draw(){
+
+ctx.fillStyle="rgba(0,0,0,0.05)"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="#ff4dc4"
+ctx.font=fontSize+"px monospace"
+
+for(let i=0;i<drops.length;i++){
+
+let text=letters[Math.floor(Math.random()*letters.length)]
+
+ctx.fillText(text,i*fontSize,drops[i]*fontSize)
+
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+drops[i]=0
+
+drops[i]++
+
+}
+
+}
+
+setInterval(draw,33)
+
+/* FINAL */
+
+function finalSurprise(){
+
+finalText.classList.remove("hidden")
+
+for(let i=0;i<80;i++){
+
+let heart=document.createElement("div")
+heart.className="heart"
+heart.innerHTML="💗"
+heart.style.left=Math.random()*100+"%"
+heart.style.fontSize=(20+Math.random()*30)+"px"
+
+document.body.appendChild(heart)
+
+}
+
+for(let i=0;i<150;i++){
+
+let conf=document.createElement("div")
+conf.className="confetti"
+conf.style.left=Math.random()*100+"%"
+conf.style.animationDuration=(3+Math.random()*3)+"s"
+
+document.body.appendChild(conf)
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
